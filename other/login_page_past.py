@@ -1,18 +1,18 @@
 import tkinter as tk
 import customtkinter
-from gui_audio_input import user_input_audio_signup
-from note_analysis import audio_note_analysis
+from gui_audio_input import user_input_audio
+from other.note_analysis import audio_note_analysis
 
 # Set appearance mode and default color theme using customtkinter
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("green")
 
 # Create a class for the login application
-class SignupApp:
+class LoginApp:
     def __init__(self, root):
         # Initialize the main window
         self.root = root
-        self.root.title("Sign Up")
+        self.root.title("Login")
         self.root.geometry("600x440")
 
         # Call the method to create widgets
@@ -42,8 +42,8 @@ class SignupApp:
         # self.checkbox_show_password.grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
 
         # Create a login button with the command to trigger the login process
-        self.button_signup = tk.Button(frame, text="Sign up", command=self.signup)
-        self.button_signup.grid(row=3, column=1, pady=10)
+        self.button_login = tk.Button(frame, text="Login", command=self.login)
+        self.button_login.grid(row=3, column=1, pady=10)
 
     def toggle_show_password(self):
         # Toggle the password visibility based on the checkbox state
@@ -52,22 +52,39 @@ class SignupApp:
         else:
             self.entry_password.config(show="*")
 
-    def signup(self):
+    def login(self):
         # Get entered username and password
         username = self.entry_username.get()
+        # password = self.entry_password.get()
 
-        for i in range(3):
-            # Get the password. Sing 3 times.
-            tk.messagebox.showinfo("Welcome, {}".format(username), "Pass: '+i'. Please sing four tones for your password. Remember they need to be the same.")
-            user_input_audio_signup(str(i), username)
-            #audio_note_analysis('./audio_input/password'+str(i)+'_'+username+'.wav')
-        
-        # Destroy the current login window
-        self.root.destroy()
+        # Hardcoded credentials for demonstration purposes
+        correct_username = "user"
+        # correct_password = "pass"
 
-        # Create a new window or change the page to the dashboard
-        LoginApp(root)
+        # Check if entered credentials match the hardcoded values
+        if username == correct_username:
 
+            tk.messagebox.showinfo("Welcome, {}".format(username), "Correct username, now... SING to me Paolo!")
+            user_input_audio()
+            audio_note_analysis('./audio_input/output.wav')
+            
+            # Destroy the current login window
+            self.root.destroy()
+
+            # Create a new window or change the page to the dashboard
+            self.open_dashboard()
+        else:
+            tk.messagebox.showerror("Login Failed", "Invalid username or password")
+        # if username == correct_username and password == correct_password:
+        #     tk.messagebox.showinfo("Login Successful", "Welcome, {}".format(username))
+            
+        #     # Destroy the current login window
+        #     self.root.destroy()
+
+        #     # Create a new window or change the page to the dashboard
+        #     self.open_dashboard()
+        # else:
+        #     tk.messagebox.showerror("Login Failed", "Invalid username or password")
 
     def open_dashboard(self):
         # Create a new window for the dashboard

@@ -4,7 +4,44 @@
 import pyaudio
 import wave
 
-def user_input_audio():
+def user_input_audio(username):
+    CHUNK = 1024
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 1
+    RATE = 44100
+
+    p = pyaudio.PyAudio()
+
+    stream = p.open(format=FORMAT,
+                    channels=CHANNELS,
+                    rate=RATE,
+                    input=True,
+                    frames_per_buffer=CHUNK)
+
+    print("Recording...")
+
+    frames = []
+    seconds = 5
+
+    for i in range(0, int(RATE / CHUNK * seconds)):
+        data = stream.read(CHUNK)
+        frames.append(data)
+
+    print("Finished recording.")
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+    name_folder_file = './audio_input/'
+    name_audio_file = str(username)+'.wav'
+    wf = wave.open(name_folder_file+name_audio_file, 'wb')
+    wf.setnchannels(CHANNELS)
+    wf.setsampwidth(p.get_sample_size(FORMAT))
+    wf.setframerate(RATE)
+    wf.writeframes(b''.join(frames))
+    wf.close()
+    return name_folder_file, name_audio_file
+
+def user_input_audio_signup(username, input_iter):
     CHUNK = 1024
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
@@ -32,47 +69,14 @@ def user_input_audio():
     stream.close()
     p.terminate()
 
-    wf = wave.open('./audio_input/output.wav', 'wb')
+    wf = wave.open('./audio_input/password_'+str(input_iter)+'_'+str(username)+'.wav', 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(p.get_sample_size(FORMAT))
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
 
-def user_input_audio_signup(iter, username):
-    CHUNK = 1024
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 1
-    RATE = 44100
-
-    p = pyaudio.PyAudio()
-
-    stream = p.open(format=FORMAT,
-                    channels=CHANNELS,
-                    rate=RATE,
-                    input=True,
-                    frames_per_buffer=CHUNK)
-
-    print("Recording...")
-
-    frames = []
-    seconds = 5
-
-    for i in range(0, int(RATE / CHUNK * seconds)):
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-    print("Finished recording.")
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
-    wf = wave.open('./audio_input/password'+iter+'_'+username+'.wav', 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(p.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
-    wf.close()
+    return True
 
 #Testing
 # user_input_audio()

@@ -1,7 +1,7 @@
 import tkinter as tk
 import customtkinter
 from gui_audio_input import user_input_audio
-from note_analysis import audio_note_analysis
+from other.note_analysis import audio_note_analysis
 
 # Set appearance mode and default color theme using customtkinter
 customtkinter.set_appearance_mode("System")
