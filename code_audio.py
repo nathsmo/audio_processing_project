@@ -58,11 +58,13 @@ def onset_finder(y, sr, hoplen=512, start_time=0, savefig_name=None):
     corrected_onset_time = correctedonstm+start/sr
     corrected_onset_sample = correctedonstm*sr+start
     corrected_onset_frames = librosa.samples_to_frames(corrected_onset_sample, hop_length=hoplen)
-
-    print(corrected_onset_frames)
+    if len(corrected_onset_frames) == 0:
+        print('No onsets detected, please try again.')
+        return False
+    print("Corrected Onset Frames", corrected_onset_frames)
     corrected_onset_frames = librosa.onset.onset_backtrack(corrected_onset_frames, o_env)
     corrected_onset_sample = librosa.frames_to_samples(corrected_onset_frames, hop_length=hoplen)
-    print('backtracked:', corrected_onset_frames)
+    print('Backtracked:', corrected_onset_frames)
 
     if savefig_name is not None:
         # plot the waveform together with onset times superimposed in red
@@ -153,8 +155,11 @@ def find_best_notes(y, sr, corrected_onset_frames, savefig_name=None):
 
             ## maybe: figure out how to tune the pitch of a note??
             # pitch_tuning = librosa.pitch_tuning(vals)
-
-            avg_val = np.nanmean(vals)
+            try:
+                avg_val = np.nanmean(vals)
+            except:
+                print("Error with average values")
+                return False
             avg_symbol = librosa.hz_to_note(avg_val)
             hz_median = np.nanpercentile(vals, 50)
             hz_sigma = np.nanpercentile(vals, 84.1) - hz_median
@@ -212,15 +217,16 @@ def note_analysis(recording_file, save_rmse_name=None, save_spect_name=None):
 
     # load in file
     y, sr = librosa.load(recording_file)
-
     # reduce noise
+    if y == []:
+        print('No audio detected')
+        return False
     y = nr.reduce_noise(y, sr)
-
     # find correct onset index values
     corrected_onset_frames = onset_finder(y, sr, savefig_name=save_rmse_name)
+    if type(corrected_onset_frames) == type(False):
+        return False
     # print('corrected onset frames:', corrected_onset_frames)
-
-    
     # find best note within each onset window
     best_notes = find_best_notes(y, sr, corrected_onset_frames, savefig_name=save_spect_name)
     return best_notes
@@ -234,8 +240,7 @@ def password_creation(recording_file_path, recording_file_names, password_df_pat
         best_notes = note_analysis(recording_file_path+name) 
         #    save_rmse_name='project3_figures/'+name+'_rmse.png',
         save_spect_name='project3_figures/'+name+'_spect.png'
-        print('Best notes for', name, ':')
-        print(best_notes)
+        print('Best notes for', name, ':', best_notes)
         full_selection.append(best_notes)
 
     print('================')
@@ -289,6 +294,9 @@ def login_attempt(entry_path, entry, password_df, username):
 
     # perform note analysis for entry file
     entry_best_notes = note_analysis(entry_path+entry)
+    if entry_best_notes == False:
+        messagebox.showinfo(message="No sound detected, please try again.")
+        pass
     print('login attempt best notes:', entry_best_notes)
 
     # compare to password df
@@ -298,7 +306,9 @@ def login_attempt(entry_path, entry, password_df, username):
     except:
         messagebox.showinfo(message="No username detected, please sign up.")
         pass
-
+    if type(entry_best_notes) == type(True):
+        messagebox.showinfo(message="Try again please, something went wrong.")
+        exit()
     for entry_idx in range(len(entry_best_notes)):
         print('section', entry_idx+1, ':')
         password_note = password[password['section_number']==entry_idx+1]['average_hz_val'].values

@@ -28,17 +28,21 @@ def user_input_audio(username):
         frames.append(data)
 
     print("Finished recording.")
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-    name_folder_file = './audio_input/'
-    name_audio_file = str(username)+'.wav'
-    wf = wave.open(name_folder_file+name_audio_file, 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(p.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
-    wf.close()
+    try:
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+        name_folder_file = './audio_input/'
+        name_audio_file = str(username)+'.wav'
+        wf = wave.open(name_folder_file+name_audio_file, 'wb')
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(p.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
+        wf.close()
+    except:
+        print('Error saving file')
+        return False, False
     return name_folder_file, name_audio_file
 
 def user_input_audio_signup(username, input_iter):

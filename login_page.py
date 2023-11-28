@@ -12,7 +12,7 @@ class MainApp:
         # Initialize the main window
         self.root = root
         self.root.title("Welcome page")
-        self.root.geometry("600x440")
+        self.root.geometry("800x200")
         self.password_df = 'section_outputs.csv'
 
         # Call the method to create widgets
@@ -25,31 +25,26 @@ class MainApp:
 
         # Username label and text entry box
         self.label_username = tk.Label(self.frame, text="Username:")
-        self.label_username.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
+        self.label_username.grid(row=0, column=0, padx=150, pady=10, sticky=tk.W)
 
         self.entry_username = tk.Entry(self.frame)
-        self.entry_username.grid(row=0, column=1, padx=10, pady=10, sticky=tk.W)
+        self.entry_username.grid(row=0, column=1, pady=10, sticky=tk.W)
 
         ## ----- Buttons ----- ##
         #Login button
-        self.login_btn = tk.Button(self.frame, text='Login', width=20, command=self.login)#change command to login page
+        self.login_btn = tk.Button(self.frame, text='Login', width=15, command=self.login)#change command to login page
         self.login_btn.grid(row=1, column=1, pady=10)
         # Sign up button
-        self.signup_btn = tk.Button(self.frame, text='Sign up', width=20, command=self.signup)# change command to open signup page
-        self.signup_btn.grid(row=2, column=1, pady=10)
+        self.signup_btn = tk.Button(self.frame, text='Sign up', width=15, command=self.signup)# change command to open signup page
+        self.signup_btn.grid(row=1, column=0, pady=10)
         #Close window button
-        self.close_btn = tk.Button(self.frame, text='Close window', width=20, command=root.destroy)
-        self.close_btn.grid(row=3, column=1, pady=10)
+        #self.close_btn = tk.Button(self.frame, text='Close window', width=20, command=root.destroy)
+        #self.close_btn.grid(row=4, column=1, pady=10)
 
-    def init_countdown(self, og_time):
-        self.countdown_frame = tk.Tk()
-        self.countdown_frame.title("5-Second Counter")
-
-        self.counter_label = tk.Label(self.countdown_frame, text="", font=("Helvetica", 24))
-        self.counter_label.pack(pady=20)
-
-        self.countdown(og_time)
-
+        self.label_instruction = tk.Label(self.frame, text="Wait 1 second after pressing the button to start singing.")
+        self.label_instruction.grid(row=3, column=0, pady=5, sticky=tk.W)
+        #self.label_instruction2 = tk.Label(self.frame, text="    the button to start singing.")
+        #self.label_instruction2.grid(row=5, column=1, pady=5, sticky=tk.W)
     def countdown(self, remaining):
         if remaining <= 0:
             self.counter_label.configure(text="Time's up!")
@@ -59,22 +54,27 @@ class MainApp:
             self.countdown_frame.after(1000, lambda: self.countdown(remaining - 1))
 
     def login(self):
+
         # Get entered username
         username = self.entry_username.get()
-        print('The username is: ', username)
+        #print('The username is: ', username)
         # Add widgets and functionalities for the dashboard
         if self.verify_usernames(login=True):
+
             entry_path, entry = user_input_audio(username)
-            if login_attempt(entry_path, entry, self.password_df, username):
-                messagebox.showinfo(message ="Welcome, {}".format(username))
-                #Add code to send user to the dashboard
-            else:
-                tk.showinfo(message ="Wrong password, please try again")
-            return
+            if entry_path != False:
+                if login_attempt(entry_path, entry, self.password_df, username):
+                    self.frame.destroy()
+                    messagebox.showinfo(message ="Welcome, {}".format(username))
+                    self.open_dashboard()
+                else:
+                    messagebox.showinfo(message ="Wrong password, please try again")
+                return
         else:
             return 
         
     def signup_instructions(self, who):
+        
         if self.verify_usernames(): 
             if who ==1:
                 print('button 1 clicked')
@@ -82,7 +82,7 @@ class MainApp:
                 if user_input_audio_signup(self.entry_username1.get(), who):
                     self.signup_btn1.destroy()
                     self.signup_btn1 = tk.Label(self.framesu, text='Finished', width=10)
-                    self.signup_btn1.grid(row=3, column=0, pady=10)
+                    self.signup_btn10.grid(row=4, column=0, pady=10)
             elif who ==2:
                 print('button 2 clicked')
                 #self.signup_btn2.configure(bg="green", text='Recording...')
@@ -90,6 +90,7 @@ class MainApp:
                     self.signup_btn2.destroy()
                     self.signup_btn2 = tk.Label(self.framesu, text='Finished', width=10)
                     self.signup_btn2.grid(row=3, column=1, pady=10)
+
             elif who ==3:
                 print('button 3 clicked')
                 if user_input_audio_signup(self.entry_username1.get(), who):
@@ -104,7 +105,7 @@ class MainApp:
     def signup(self):
         self.signup_w = tk.Tk()
         self.signup_w.title("Sign up page")
-        self.signup_w.geometry("600x200")
+        self.signup_w.geometry("500x300")
         
         self.framesu = tk.Frame(self.signup_w)
         self.framesu.place(relx=0.5, rely=0.5, anchor=tk.CENTER)  # Place the frame in the center of the window
@@ -125,21 +126,26 @@ class MainApp:
 
         #First input button
         self.signup_btn1 = tk.Button(self.framesu, text='Record', width=10, command=lambda : self.signup_instructions(who=1))
-        self.signup_btn1.grid(row=3, column=0, pady=10)
+        self.signup_btn1.grid(row=2, column=0, pady=10)
 
         #Second input button
         self.signup_btn2 = tk.Button(self.framesu, text='Record', width=10, command=lambda : self.signup_instructions(who=2))
-        self.signup_btn2.grid(row=3, column=1, pady=10)
+        self.signup_btn2.grid(row=2, column=1, pady=10)
 
         #Third input button
         self.signup_btn3 = tk.Button(self.framesu, text='Record', width=10, command=lambda : self.signup_instructions(who=3))
-        self.signup_btn3.grid(row=3, column=2, pady=10)
+        self.signup_btn3.grid(row=2, column=2, pady=10)
 
         # Final verification for sign-up - button
         # Add verification code for the sign-up
         self.finish_signup = tk.Button(self.framesu, text='Sign up', width=10, command=lambda : self.final_signup())
-        self.finish_signup.grid(row=4, column=1, pady=10)
-    
+        self.finish_signup.grid(row=5, column=1, pady=10)
+
+        self.label_instructionSU = tk.Label(self.framesu, text="  Wait 1 second after pressing")
+        self.label_instructionSU.grid(row=3, column=1, pady=5, sticky=tk.W)
+        self.label_instructionSU2 = tk.Label(self.framesu, text="    the button to start singing.")
+        self.label_instructionSU2.grid(row=4, column=1, pady=5, sticky=tk.W)
+
     def verify_usernames(self, login=False):
         ####---- code to verify both usernames are the same ----####
         database = pd.read_csv(self.password_df)
@@ -164,13 +170,21 @@ class MainApp:
     def final_signup(self):
         if self.verify_usernames():
             filenames = ['password_1_'+self.entry_username1.get()+'.wav','password_2_'+self.entry_username1.get()+'.wav','password_3_'+self.entry_username1.get()+'.wav']
-            print('Filenames',filenames)
-            print('Password df',self.password_df, 'Username', self.entry_username1.get())
+            #print('Filenames',filenames)
+            #print('Password df',self.password_df, 'Username', self.entry_username1.get())
             if password_creation('./audio_input/', filenames, self.password_df, self.entry_username1.get()):
                 messagebox.showinfo(message="You have successfully signed up!")
                 self.signup_w.destroy()
-   
 
+    def open_dashboard(self):
+        # Create a new Toplevel window for the dashboard
+        dashboard_window = tk.Toplevel(self.root)
+        dashboard_window.title("Dashboard")
+        dashboard_window.geometry("400x200")
+
+        # Add widgets and functionalities for the dashboard
+        label_dashboard = tk.Label(dashboard_window, text="Welcome to the Dashboard!")
+        label_dashboard.pack(pady=20)
 # Main entry point of the program
 if __name__ == "__main__":
     # Create the main Tkinter window and the LoginApp instance
