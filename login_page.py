@@ -1,10 +1,13 @@
 # Importing libraries
 import tkinter as tk
 from tkinter import messagebox
+import os
+import glob
+import pandas as pd
+
 ### Our own libraries
 from code_audio import login_attempt, password_creation
 from gui_audio_input import user_input_audio, user_input_audio_signup
-import pandas as pd
 
 # Create a class for the login application
 class MainApp:
@@ -87,6 +90,7 @@ class MainApp:
                 if login_attempt(entry_path, entry, self.password_df, username):
                     self.frame.destroy()
                     messagebox.showinfo(message ="Welcome, {}".format(username))
+                    self.delete_file()
                     self.open_dashboard()
                 else:
                     messagebox.showinfo(message ="Wrong password, please try again")
@@ -215,6 +219,7 @@ class MainApp:
             #print('Password df',self.password_df, 'Username', self.entry_username1.get())
             if password_creation('./audio_input/', filenames, self.password_df, self.entry_username1.get()):
                 messagebox.showinfo(message="You have successfully signed up!")
+                self.delete_file()
                 self.signup_w.destroy()
 
     def open_dashboard(self):
@@ -231,6 +236,17 @@ class MainApp:
         # Add widgets and functionalities for the dashboard
         label_dashboard = tk.Label(dashboard_window, text="Welcome to the Dashboard!")
         label_dashboard.pack(pady=20)
+
+    def delete_file(self):
+        """
+        Deletes all audio files in folder.
+
+        :return: None
+        """
+        files = glob.glob('./audio_input//*')
+        for f in files:
+            os.remove(f)
+        return
 # Main entry point of the program
 if __name__ == "__main__":
     # Create the main Tkinter window and the LoginApp instance

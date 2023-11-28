@@ -338,7 +338,7 @@ def login_attempt(entry_path, entry, password_df, username):
     entry_best_notes = note_analysis(entry_path+entry)
     if entry_best_notes == False:
         messagebox.showinfo(message="No sound detected, please try again.")
-        pass
+        return False
     print('login attempt best notes:', entry_best_notes)
 
     # compare to password df
@@ -347,7 +347,7 @@ def login_attempt(entry_path, entry, password_df, username):
         password = df_temp.where(df_temp.user == username)
     except:
         messagebox.showinfo(message="No username detected, please sign up.")
-        pass
+        return False
     if type(entry_best_notes) == type(True):
         messagebox.showinfo(message="Try again please, something went wrong.")
         exit()
