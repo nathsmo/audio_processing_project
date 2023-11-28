@@ -1,10 +1,17 @@
-#Created by: Nathalia Morales
+# Created by: Nathalia Morales
 # If you have any problems installing pyaudio to this: https://stackoverflow.com/questions/73268630/error-could-not-build-wheels-for-pyaudio-which-is-required-to-install-pyprojec
 # worked on my Mac.
+
 import pyaudio
 import wave
 
 def user_input_audio(username):
+    """
+    Records audio for a specified duration and saves it as a WAV file.
+
+    :param username: The username associated with the recorded audio.
+    :return: Tuple containing the folder path and filename of the saved audio file.
+    """
     CHUNK = 1024
     FORMAT = pyaudio.paInt16
     CHANNELS = 1
@@ -46,6 +53,13 @@ def user_input_audio(username):
     return name_folder_file, name_audio_file
 
 def user_input_audio_signup(username, input_iter):
+    """
+    Records audio for signup purposes and saves it with an incremented filename.
+
+    :param username: The username associated with the recorded audio.
+    :param input_iter: An iteration index for creating unique filenames during signup.
+    :return: True if the recording and saving process is successful.
+    """
     CHUNK = 1024
     FORMAT = pyaudio.paInt16
     CHANNELS = 1

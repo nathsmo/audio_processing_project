@@ -1,3 +1,5 @@
+# Created by: Sarah Howes
+
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa
@@ -7,9 +9,18 @@ import pandas as pd
 from tkinter import messagebox
 
 
-# find onsets
+# Find onsets in an audio signal
 def onset_finder(y, sr, hoplen=512, start_time=0, savefig_name=None):
+    """
+    Detects onsets in an audio signal and corrects them using backtracking.
 
+    :param y: Audio signal.
+    :param sr: Sampling rate.
+    :param hoplen: Hop length for onset detection.
+    :param start_time: Start time for onset detection.
+    :param savefig_name: Optional name to save a plot of the onset detection process.
+    :return: Corrected onset frames.
+    """
     idx = np.arange(len(y))
 
     # start xx seconds in
@@ -98,9 +109,17 @@ def onset_finder(y, sr, hoplen=512, start_time=0, savefig_name=None):
 
 
 
-# find notes in each onset segment
+# Find notes in each onset segment
 def find_best_notes(y, sr, corrected_onset_frames, savefig_name=None):
+    """
+    Finds the best note within each onset segment using pitch analysis.
 
+    :param y: Audio signal.
+    :param sr: Sampling rate.
+    :param corrected_onset_frames: Corrected onset frames.
+    :param savefig_name: Optional name to save a plot of the pitch analysis process.
+    :return: List of best notes (in Hz) for each onset segment.
+    """
     ##find fundamental frequency (f0)
     f0, voiced_flag, voiced_probs = librosa.pyin(y,
                                                 fmin=librosa.note_to_hz('C2'),
@@ -212,9 +231,16 @@ def find_best_notes(y, sr, corrected_onset_frames, savefig_name=None):
 
 
 
-# full process
+# Full process of note analysis for password creation
 def note_analysis(recording_file, save_rmse_name=None, save_spect_name=None):
+    """
+    Performs note analysis on an audio recording for password creation.
 
+    :param recording_file: Path to the audio recording.
+    :param save_rmse_name: Optional name to save a plot of the RMSE analysis process.
+    :param save_spect_name: Optional name to save a plot of the spectrogram analysis process.
+    :return: List of best notes (in Hz) for each onset segment.
+    """
     # load in file
     y, sr = librosa.load(recording_file)
     # reduce noise
@@ -231,9 +257,17 @@ def note_analysis(recording_file, save_rmse_name=None, save_spect_name=None):
     best_notes = find_best_notes(y, sr, corrected_onset_frames, savefig_name=save_spect_name)
     return best_notes
 
-
+# Create a password using multiple audio recordings
 def password_creation(recording_file_path, recording_file_names, password_df_path, username):
+    """
+    Creates a password using note analysis on multiple audio recordings.
 
+    :param recording_file_path: Path to the directory containing audio recordings.
+    :param recording_file_names: List of audio recording filenames.
+    :param password_df_path: Path to save the password DataFrame.
+    :param username: Username associated with the password.
+    :return: True if password creation is successful.
+    """
     # perform note analysis on 5 audio recordings
     full_selection = []
     for name in recording_file_names:
@@ -289,9 +323,17 @@ def password_creation(recording_file_path, recording_file_names, password_df_pat
     print('Password created!')
     return True
 
-
+# Attempt to log in by comparing an entry with the stored password
 def login_attempt(entry_path, entry, password_df, username):
+    """
+    Attempts to log in by comparing an entry with the stored password.
 
+    :param entry_path: Path to the directory containing the entry audio.
+    :param entry: Filename of the entry audio.
+    :param password_df: Path to the stored password DataFrame.
+    :param username: Username attempting to log in.
+    :return: True if the login attempt is successful.
+    """
     # perform note analysis for entry file
     entry_best_notes = note_analysis(entry_path+entry)
     if entry_best_notes == False:

@@ -5,11 +5,16 @@ from tkinter import messagebox
 from code_audio import login_attempt, password_creation
 from gui_audio_input import user_input_audio, user_input_audio_signup
 import pandas as pd
-# Create a class for the login application
 
+# Create a class for the login application
 class MainApp:
+    
     def __init__(self, root):
-        # Initialize the main window
+        """
+        Initializes the main application window.
+
+        :param root: Tkinter root window.
+        """
         self.root = root
         self.root.title("Welcome page")
         self.root.geometry("800x200")
@@ -19,6 +24,11 @@ class MainApp:
         self.create_widgets()
 
     def create_widgets(self):
+        """
+        Creates widgets for the main application window.
+
+        :return: None
+        """
         # Create a frame to hold the widgets
         self.frame = tk.Frame(self.root)
         self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)  # Place the frame in the center of the window
@@ -45,7 +55,14 @@ class MainApp:
         self.label_instruction.grid(row=3, column=0, pady=5, sticky=tk.W)
         #self.label_instruction2 = tk.Label(self.frame, text="    the button to start singing.")
         #self.label_instruction2.grid(row=5, column=1, pady=5, sticky=tk.W)
+
     def countdown(self, remaining):
+        """
+        Performs a countdown.
+
+        :param remaining: Remaining time in the countdown.
+        :return: None
+        """
         if remaining <= 0:
             self.counter_label.configure(text="Time's up!")
             # Add any actions you want to perform after the countdown ends
@@ -54,7 +71,11 @@ class MainApp:
             self.countdown_frame.after(1000, lambda: self.countdown(remaining - 1))
 
     def login(self):
+        """
+        Handles the login process.
 
+        :return: None
+        """
         # Get entered username
         username = self.entry_username.get()
         #print('The username is: ', username)
@@ -74,7 +95,12 @@ class MainApp:
             return 
         
     def signup_instructions(self, who):
-        
+        """
+        Handles signup instructions for recording.
+
+        :param who: User identifier for signup (1, 2, 3).
+        :return: None
+        """
         if self.verify_usernames(): 
             if who ==1:
                 print('button 1 clicked')
@@ -103,6 +129,11 @@ class MainApp:
             pass
 
     def signup(self):
+        """
+        Creates widgets for the signup window.
+
+        :return: None
+        """
         self.signup_w = tk.Tk()
         self.signup_w.title("Sign up page")
         self.signup_w.geometry("500x300")
@@ -147,7 +178,12 @@ class MainApp:
         self.label_instructionSU2.grid(row=4, column=1, pady=5, sticky=tk.W)
 
     def verify_usernames(self, login=False):
-        ####---- code to verify both usernames are the same ----####
+        """
+        Verifies the correctness of usernames.
+
+        :param login: Flag indicating if it's a login operation.
+        :return: Boolean indicating username verification success.
+        """
         database = pd.read_csv(self.password_df)
 
         if login:
@@ -168,6 +204,11 @@ class MainApp:
                 return False
             
     def final_signup(self):
+        """
+        Finalizes the signup process.
+
+        :return: None
+        """
         if self.verify_usernames():
             filenames = ['password_1_'+self.entry_username1.get()+'.wav','password_2_'+self.entry_username1.get()+'.wav','password_3_'+self.entry_username1.get()+'.wav']
             #print('Filenames',filenames)
@@ -177,6 +218,11 @@ class MainApp:
                 self.signup_w.destroy()
 
     def open_dashboard(self):
+        """
+        Opens the dashboard window.
+
+        :return: None
+        """
         # Create a new Toplevel window for the dashboard
         dashboard_window = tk.Toplevel(self.root)
         dashboard_window.title("Dashboard")
