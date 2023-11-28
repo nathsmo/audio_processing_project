@@ -68,8 +68,9 @@ def user_input_audio_signup(username, input_iter):
     stream.stop_stream()
     stream.close()
     p.terminate()
-
-    wf = wave.open('./audio_input/password_'+str(input_iter)+'_'+str(username)+'.wav', 'wb')
+    filename = './audio_input/password_'+str(input_iter)+'_'+str(username)+'.wav'
+    print("Filename being saved as: ",filename)
+    wf = wave.open(filename, 'wb')
     wf.setnchannels(CHANNELS)
     wf.setsampwidth(p.get_sample_size(FORMAT))
     wf.setframerate(RATE)

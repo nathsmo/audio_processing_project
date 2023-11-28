@@ -231,9 +231,9 @@ def password_creation(recording_file_path, recording_file_names, password_df_pat
     # perform note analysis on 5 audio recordings
     full_selection = []
     for name in recording_file_names:
-        best_notes = note_analysis(recording_file_path+name+'.wav') 
-                                #    save_rmse_name='project3_figures/'+name+'_rmse.png',
-                                #    save_spect_name='project3_figures/'+name+'_spect.png')
+        best_notes = note_analysis(recording_file_path+name) 
+        #    save_rmse_name='project3_figures/'+name+'_rmse.png',
+        save_spect_name='project3_figures/'+name+'_spect.png'
         print('Best notes for', name, ':')
         print(best_notes)
         full_selection.append(best_notes)
@@ -266,18 +266,23 @@ def password_creation(recording_file_path, recording_file_names, password_df_pat
         print('=======')
 
     # make a dataframe with the avg val and stev for each section
+    print("lengths of variables: avg_vals", len(avg_vals), "sigmas: ",len(sigmas), "stds: ",len(stds))
+    
     dic = {
-        'section_number': [1,2,3,4],
+        'section_number': list(range(1, len(avg_vals)+1)),
         'average_hz_val': avg_vals,
         'section_sigma': sigmas,
         'section_std': stds 
     }
+    print('***Current dic: ', dic)
     df = pd.DataFrame(dic)
     df['user'] = username
     # save to file
-    print('Saving to file:', password_df_path)
+    print('     Password_df_path: ', password_df_path)
+    print(' Saving to file:', password_df_path)
     df.to_csv(password_df_path, index=False)
     print('Password created!')
+    return True
 
 
 def login_attempt(entry_path, entry, password_df, username):
@@ -320,3 +325,4 @@ def login_attempt(entry_path, entry, password_df, username):
 # entry = 'output_6.wav'
 # entry_path = recording_file_path
 # login_attempt(entry_path, entry, password_df='section_outputs.csv')
+#password_creation('./audio_input/', ['password_1_nath.wav', 'password_2_nath.wav', 'password_3_nath.wav'], 'section_outputs.csv', 'nath')

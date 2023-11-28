@@ -66,7 +66,7 @@ class MainApp:
         if self.verify_usernames(login=True):
             entry_path, entry = user_input_audio(username)
             if login_attempt(entry_path, entry, self.password_df, username):
-                tk.showinfo(message ="Welcome, {}".format(username))
+                messagebox.showinfo(message ="Welcome, {}".format(username))
                 #Add code to send user to the dashboard
             else:
                 tk.showinfo(message ="Wrong password, please try again")
@@ -79,20 +79,20 @@ class MainApp:
             if who ==1:
                 print('button 1 clicked')
                 #self.signup_btn1.configure(bg="green", text='Recording...')
-                if user_input_audio_signup(self.entry_username1, who):
+                if user_input_audio_signup(self.entry_username1.get(), who):
                     self.signup_btn1.destroy()
                     self.signup_btn1 = tk.Label(self.framesu, text='Finished', width=10)
                     self.signup_btn1.grid(row=3, column=0, pady=10)
             elif who ==2:
                 print('button 2 clicked')
                 #self.signup_btn2.configure(bg="green", text='Recording...')
-                if user_input_audio_signup(self.entry_username1, who):
+                if user_input_audio_signup(self.entry_username1.get(), who):
                     self.signup_btn2.destroy()
                     self.signup_btn2 = tk.Label(self.framesu, text='Finished', width=10)
                     self.signup_btn2.grid(row=3, column=1, pady=10)
             elif who ==3:
                 print('button 3 clicked')
-                if user_input_audio_signup(self.entry_username1, who):
+                if user_input_audio_signup(self.entry_username1.get(), who):
                     self.signup_btn3.destroy()
                     self.signup_btn3 = tk.Label(self.framesu, text='Finished', width=10)
                     self.signup_btn3.grid(row=3, column=2, pady=10)            
@@ -137,9 +137,9 @@ class MainApp:
 
         # Final verification for sign-up - button
         # Add verification code for the sign-up
-        self.finish_signup = tk.Button(self.framesu, text='Sign up', width=10, command=lambda : self.verify_usernames())
+        self.finish_signup = tk.Button(self.framesu, text='Sign up', width=10, command=lambda : self.final_signup())
         self.finish_signup.grid(row=4, column=1, pady=10)
-
+    
     def verify_usernames(self, login=False):
         ####---- code to verify both usernames are the same ----####
         database = pd.read_csv(self.password_df)
@@ -160,7 +160,16 @@ class MainApp:
                 print('Different username, or no username entered')
                 messagebox.showinfo(message="The usernames are different or you haven't entered a username, please try again.")
                 return False
-
+            
+    def final_signup(self):
+        if self.verify_usernames():
+            filenames = ['password_1_'+self.entry_username1.get()+'.wav','password_2_'+self.entry_username1.get()+'.wav','password_3_'+self.entry_username1.get()+'.wav']
+            print('Filenames',filenames)
+            print('Password df',self.password_df, 'Username', self.entry_username1.get())
+            if password_creation('./audio_input/', filenames, self.password_df, self.entry_username1.get()):
+                messagebox.showinfo(message="You have successfully signed up!")
+                self.signup_w.destroy()
+   
 
 # Main entry point of the program
 if __name__ == "__main__":
