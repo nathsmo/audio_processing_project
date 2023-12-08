@@ -113,7 +113,7 @@ class MainApp:
                 if user_input_audio_signup(self.entry_username1.get(), who):
                     self.signup_btn1.destroy()
                     self.signup_btn1 = tk.Label(self.framesu, text='Finished', width=10)
-                    self.signup_btn10.grid(row=4, column=0, pady=10)
+                    self.signup_btn1.grid(row=3, column=0, pady=10)
             elif who ==2:
                 print('button 2 clicked')
                 #self.signup_btn2.configure(bg="green", text='Recording...')
