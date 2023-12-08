@@ -1,8 +1,10 @@
-# Welcome Page Application
+# Scream At The Computer - A Log-in system using voice tone authentication
 
 ## Overview
 
-The Welcome Page Application is a simple Tkinter-based graphical user interface (GUI) for user login and signup functionalities. It includes features for recording and analyzing audio passwords to enhance security.
+Welcome to the SATC project page. This system is a simple Tkinter-based graphical user interface (GUI) for user login and signup functionalities using voice tones. It includes features for recording and analyzing audio passwords along with deletion of files to ensure security.
+
+This project was created by Nathalia Morales, Sarah Howes and Anna Perry as part of the final project for the Master class of Audio Processing class at Leiden University 2023 first semester.
 
 ## Features
 
