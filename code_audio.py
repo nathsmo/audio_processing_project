@@ -26,59 +26,50 @@ def onset_finder(y, sr, hoplen=512, start_time=0, savefig_name=None):
     # start xx seconds in
     start = librosa.time_to_samples(start_time, sr=sr)  # start 1 second in
 
-    # Calcualte the onset frames in the usual way
+    # calculate onset strength envelope
     o_env = librosa.onset.onset_strength(y=y, sr=sr)
+
+    # calculate onset times/frames/samples
     onset_times = librosa.times_like(o_env, sr=sr)
     onset_samples = librosa.time_to_samples(onset_times, sr=sr)
-
-    # onset_frames = librosa.onset.onset_detect(y=y, sr=sr, hop_length=hoplen, backtrack=True)
     onset_frames = librosa.onset.onset_detect(onset_envelope=o_env, sr=sr, hop_length=hoplen)
 
     onstm = librosa.frames_to_time(onset_frames, sr=sr, hop_length=hoplen)
     ons_samples = librosa.time_to_samples(onstm, sr=sr)
 
 
-    # following: https://stackoverflow.com/questions/44013269/recorded-audio-of-one-note-produces-multiple-onset-times
-    # instead of RMS, using Onset Strength seemed to work better
-    # rmse = librosa.feature.rms(y=y, frame_length=512, hop_length=hoplen)[0,]
-    # envtm = librosa.frames_to_time(np.arange(len(rmse)), sr=sr, hop_length=hoplen)
-    rmse = o_env
-    envtm = onset_times
-
     # Use first 2 seconds of recording in order to estimate median noise level
     # and typical variation
-    noiseidx = [envtm < 2.0][0]
-    # noiseidx = [envtm > envtm[-1] - 1.0][0]
+    noiseidx = [onset_times < 2.0][0]
     noiseidx = np.array(np.where(noiseidx==True))[0]
-    noisemedian = np.percentile(rmse[noiseidx], 50)
-    sigma = np.percentile(rmse[noiseidx], 84.1) - noisemedian
+    noisemedian = np.percentile(o_env[noiseidx], 50)
+    sigma = np.percentile(o_env[noiseidx], 84.1) - noisemedian
 
     # Set the minimum RMS energy threshold that is needed in order to declare
     # an "onset" event to be equal to 5 sigma above the median
     threshold = noisemedian + 5*sigma
-    # threshold = 4.0
-    threshidx = [rmse > threshold][0]
+    threshidx = [o_env > threshold][0]
     threshidx = np.array(np.where(threshidx==True))[0]
 
 
     # Choose the corrected onset times as only those which meet the RMS energy
     # minimum threshold requirement
-    correctedonstm = onstm[[tm in envtm[threshidx] for tm in onstm]]
+    correctedonstm = onstm[[tm in onset_times[threshidx] for tm in onstm]]
 
     # Print both in units of actual time (seconds) and sample ID number
     corrected_onset_time = correctedonstm+start/sr
     corrected_onset_sample = correctedonstm*sr+start
     corrected_onset_frames = librosa.samples_to_frames(corrected_onset_sample, hop_length=hoplen)
-    if len(corrected_onset_frames) == 0:
-        print('No onsets detected, please try again.')
+    if len(corrected_onset_frames) != 4:
+        print(f'Only {len(corrected_onset_frames)} detected, please try again.')
         return False
-    print("Corrected Onset Frames", corrected_onset_frames)
+    print("Corrected Onset Frames:", corrected_onset_frames)
     corrected_onset_frames = librosa.onset.onset_backtrack(corrected_onset_frames, o_env)
     corrected_onset_sample = librosa.frames_to_samples(corrected_onset_frames, hop_length=hoplen)
     print('Backtracked:', corrected_onset_frames)
 
+    # plot the waveform together with onset times superimposed in red
     if savefig_name is not None:
-        # plot the waveform together with onset times superimposed in red
         fg = plt.figure(figsize=[12, 8])
         ax1 = fg.add_subplot(2,1,1)
         ax2 = fg.add_subplot(2,1,2, sharex=ax1)
@@ -127,8 +118,8 @@ def find_best_notes(y, sr, corrected_onset_frames, savefig_name=None):
     # times of fundamental frequencies
     f0_times = librosa.times_like(f0)
 
+    # plot CQT spectrogram with notes detected
     if savefig_name is not None:
-        # plot spectrogram
         # Constant Q Transform (best for finding note names instead of frequencies)
         cqt = np.abs(librosa.cqt(y, sr=sr, hop_length=512))
         corrected_onset_times = librosa.frames_to_time(corrected_onset_frames, sr=sr)
@@ -144,7 +135,6 @@ def find_best_notes(y, sr, corrected_onset_frames, savefig_name=None):
         ax.legend()
         ax.set(title='CQT + Onset markers')
         ax.plot(f0_times, f0, label='f0', color='cyan', linewidth=3)
-        # plt.savefig('sample_recording_cqt.png', dpi=300)
         plt.savefig(savefig_name, dpi=300)
         plt.close()
 
@@ -172,8 +162,6 @@ def find_best_notes(y, sr, corrected_onset_frames, savefig_name=None):
             # determine a threshold variance around that note
             # (threshold determined similar to onset strength)
 
-            ## maybe: figure out how to tune the pitch of a note??
-            # pitch_tuning = librosa.pitch_tuning(vals)
             try:
                 avg_val = np.nanmean(vals)
             except:
@@ -185,7 +173,6 @@ def find_best_notes(y, sr, corrected_onset_frames, savefig_name=None):
             hz_std = np.nanstd(vals)
             hz_threshold = hz_median + 5*hz_sigma
             
-            # print('note vals:', vals)
             print('mean note symbol:', avg_symbol)
             print('mean note val:', avg_val)
             print('hz median:', hz_median)
@@ -196,37 +183,12 @@ def find_best_notes(y, sr, corrected_onset_frames, savefig_name=None):
             best_notes.append(avg_symbol)
             best_hz.append(avg_val)
 
-
-            ## loop through all the windowed f0 values, determine the note
-            # notes = []
-            # for hz in vals:
-            #     if np.isnan(hz) == False:
-            #         note = librosa.hz_to_note(hz)
-            #         notes.append(note)
-
-            # ## add up all the reported notes
-            # note_counter = dict(Counter(notes))
-
-            # # choose the note that is counted the most in the segment
-            # if len(note_counter) == 0:
-            #     # sections that don't have any singing in them
-            #     best_notes.append('Pause')
-            # else:
-            #     best_note = max(note_counter, key=note_counter.get)
-            #     print('SEGMENT:', last, i)
-            #     print('NOTES:', note_counter)
-            #     print('The best note in segment:', best_note)
-            #     print('=======')
-
-                # append to best note array
-                # best_notes.append(best_note)
-
         last = i
 
     print('best notes:', best_notes)
     print('best vals:', best_hz)
     print('=====/////======')
-    return best_hz #best_notes
+    return best_hz
 
 
 
@@ -243,16 +205,18 @@ def note_analysis(recording_file, save_rmse_name=None, save_spect_name=None):
     """
     # load in file
     y, sr = librosa.load(recording_file)
+
     # reduce noise
     if y == []:
         print('No audio detected')
         return False
     y = nr.reduce_noise(y, sr)
+
     # find correct onset index values
     corrected_onset_frames = onset_finder(y, sr, savefig_name=save_rmse_name)
     if type(corrected_onset_frames) == type(False):
         return False
-    # print('corrected onset frames:', corrected_onset_frames)
+
     # find best note within each onset window
     best_notes = find_best_notes(y, sr, corrected_onset_frames, savefig_name=save_spect_name)
     return best_notes
@@ -272,7 +236,6 @@ def password_creation(recording_file_path, recording_file_names, password_df_pat
     full_selection = []
     for name in recording_file_names:
         best_notes = note_analysis(recording_file_path+name) 
-        #    save_rmse_name='project3_figures/'+name+'_rmse.png',
         save_spect_name='project3_figures/'+name+'_spect.png'
         print('Best notes for', name, ':', best_notes)
         full_selection.append(best_notes)
@@ -291,7 +254,6 @@ def password_creation(recording_file_path, recording_file_names, password_df_pat
         hz_median = np.nanpercentile(sec, 50)
         hz_sigma = np.nanpercentile(sec, 84.1) - hz_median
         hz_std = np.nanstd(sec)
-        # hz_threshold = hz_median + 5*hz_sigma
         avg_vals.append(avg_val)
         sigmas.append(hz_sigma)
         stds.append(hz_std)
@@ -337,7 +299,7 @@ def login_attempt(entry_path, entry, password_df, username):
     # perform note analysis for entry file
     entry_best_notes = note_analysis(entry_path+entry)
     if entry_best_notes == False:
-        messagebox.showinfo(message="No sound detected, please try again.")
+        messagebox.showinfo(message="Not the right number of notes detected, please try again.")
         return False
     print('login attempt best notes:', entry_best_notes)
 
@@ -351,30 +313,40 @@ def login_attempt(entry_path, entry, password_df, username):
     if type(entry_best_notes) == type(True):
         messagebox.showinfo(message="Try again please, something went wrong.")
         exit()
+    
+    pass_counter = 0
+    fail_counter = 0
     for entry_idx in range(len(entry_best_notes)):
-        print('section', entry_idx+1, ':')
         password_note = password[password['section_number']==entry_idx+1]['average_hz_val'].values
         password_sigma = password[password['section_number']==entry_idx+1]['section_sigma'].values
-        print('password note:', password_note)
-        print('password std:', password_sigma*5)
-        print('entry note:', entry_best_notes[entry_idx])
-        is_within = password_note-password_sigma*5 <= entry_best_notes[entry_idx] <= password_note+password_sigma*5
-        if is_within == True:
-            print('PASS')
-            return True
+
+        # relax threshold bounds for a correct/incorrect note if the sigma is too low
+        if password_sigma*5 < 5.0:
+            print('threshold too low, relaxing bounds...')
+            note_threshold = 5.0
         else:
-            print('FAIL')
-            return False
+            note_threshold = password_sigma*5
+        print('section', entry_idx+1, ':')
+        print('password note:', password_note)
+        print('password threshold:', note_threshold)
+        print('entry note:', entry_best_notes[entry_idx])
+
+        # determine if note is within the threshold
+        is_within = password_note-note_threshold <= entry_best_notes[entry_idx] <= password_note+note_threshold
+        
+        # then count the amount of times it passes & fails for each (out of 4) notes
+        if is_within == True:
+            print(f'Section {entry_idx+1}: PASS')
+            pass_counter+=1
+        else:
+            print(f'Section {entry_idx+1}: FAIL')
+            fail_counter+=1
         print('=======')
+    print('total pass counter:', pass_counter)
+    print('total fail counter:', fail_counter)
 
-# ------ Test data ------
-
-# recording_file_path = 'v.1/audio_input/'
-# recording_file_names = ['output', 'output_2', 
-#                         'output_3',  'output_4',
-#                         'output_5']
-
-# entry = 'output_6.wav'
-# entry_path = recording_file_path
-# login_attempt(entry_path, entry, password_df='section_outputs.csv')
-#password_creation('./audio_input/', ['password_1_nath.wav', 'password_2_nath.wav', 'password_3_nath.wav'], 'section_outputs.csv', 'nath')
+    # pass only if all four notes are correct
+    if pass_counter == 4:
+        return True
+    else:
+        return False

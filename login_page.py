@@ -55,10 +55,10 @@ class MainApp:
         #self.close_btn = tk.Button(self.frame, text='Close window', width=20, command=root.destroy)
         #self.close_btn.grid(row=4, column=1, pady=10)
 
+        self.label_instruction2 = tk.Label(self.frame, text="Sing 4 long notes. You have 5 seconds to sing.")
+        self.label_instruction2.grid(row=3, column=0, pady=5, sticky=tk.W)
         self.label_instruction = tk.Label(self.frame, text="Wait 1 second after pressing the button to start singing.")
-        self.label_instruction.grid(row=3, column=0, pady=5, sticky=tk.W)
-        #self.label_instruction2 = tk.Label(self.frame, text="    the button to start singing.")
-        #self.label_instruction2.grid(row=5, column=1, pady=5, sticky=tk.W)
+        self.label_instruction.grid(row=4, column=0, pady=5, sticky=tk.W)
 
     def countdown(self, remaining):
         """
